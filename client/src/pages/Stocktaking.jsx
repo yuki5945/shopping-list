@@ -10,7 +10,7 @@ function Stocktaking() {
 
   const fetchInventory = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory');
+      const response = await fetch('/api/inventory');
       const data = await response.json();
       setInventory(data.data);
     } catch (error) {
@@ -34,7 +34,7 @@ function Stocktaking() {
     if (updateList.length === 0) return;
 
     try {
-      await fetch('http://localhost:3001/api/inventory/update', {
+      await fetch('/api/inventory/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates: updateList })

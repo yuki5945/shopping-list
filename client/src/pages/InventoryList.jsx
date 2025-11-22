@@ -10,7 +10,7 @@ function InventoryList() {
 
   const fetchInventory = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory');
+      const response = await fetch('/api/inventory');
       const data = await response.json();
       setInventory(data.data);
     } catch (error) {
@@ -25,7 +25,7 @@ function InventoryList() {
   const deleteItem = async (id) => {
     if (!window.confirm('本当に削除しますか？')) return;
     try {
-      await fetch(`http://localhost:3001/api/items/${id}`, {
+      await fetch(`/api/items/${id}`, {
         method: 'DELETE'
       });
       fetchInventory();

@@ -10,7 +10,7 @@ function ShoppingList() {
 
   const fetchInventory = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/inventory');
+      const response = await fetch('/api/inventory');
       const data = await response.json();
       
       // Flatten items and filter what needs to be bought
@@ -52,7 +52,7 @@ function ShoppingList() {
     if (purchasedItems.length === 0) return;
 
     try {
-      await fetch('http://localhost:3001/api/shopping/complete', {
+      await fetch('/api/shopping/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: purchasedItems })
