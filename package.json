@@ -2,7 +2,7 @@
   "name": "shopping-memo-app",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd client && npm install && npm run build",
+    "build": "cd client && npm ci && npm run build",
     "postinstall": "cd server && npm install"
   },
   "dependencies": {
