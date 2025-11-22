@@ -4,6 +4,8 @@ function InventoryList() {
   const [inventory, setInventory] = useState([]);
   const [expandedGenre, setExpandedGenre] = useState(null);
   const [addingItemToGenre, setAddingItemToGenre] = useState(null);
+  const [editingItem, setEditingItem] = useState(null); // ID of item being edited
+  const [editForm, setEditForm] = useState({}); // Form data for editing
   const [newItem, setNewItem] = useState({ name: '', min_quantity: 1, current_quantity: 0 });
 
   useEffect(() => {
@@ -65,6 +67,36 @@ function InventoryList() {
     }
   };
 
+  const startEditing = (item) => {
+    setEditingItem(item.id);
+    setEditForm({ ...item });
+  };
+
+  const cancelEditing = () => {
+    setEditingItem(null);
+    setEditForm({});
+  };
+
+  const handleUpdateItem = async () => {
+    if (!editForm.name) return alert('商品名を入力してください');
+
+    try {
+      await fetch(`/api/items/${editForm.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editForm,
+          genre_id: inventory.find(g => g.items.some(i => i.id === editForm.id)).id // Keep same genre
+        })
+      });
+      setEditingItem(null);
+      fetchInventory();
+    } catch (error) {
+      console.error('Error updating item:', error);
+      alert('更新に失敗しました');
+    }
+  };
+
   return (
     <div>
       <h2>在庫一覧</h2>
@@ -80,19 +112,66 @@ function InventoryList() {
                 <p>このジャンルに商品はありません。</p>
               ) : (
                 genre.items.map(item => (
-                  <div key={item.id} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">{item.name}</div>
-                      <div className="item-meta">
-                        下限: {item.min_quantity} | 現在: {item.current_quantity}
+                  <div key={item.id} className="item-row" style={{ flexDirection: editingItem === item.id ? 'column' : 'row', alignItems: editingItem === item.id ? 'stretch' : 'center' }}>
+                    {editingItem === item.id ? (
+                      // Editing Mode
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                        <input 
+                          type="text" 
+                          value={editForm.name}
+                          onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                          style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.8rem' }}>下限</label>
+                            <input 
+                              type="number" 
+                              value={editForm.min_quantity}
+                              onChange={(e) => setEditForm({...editForm, min_quantity: parseInt(e.target.value)})}
+                              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.8rem' }}>現在</label>
+                            <input 
+                              type="number" 
+                              value={editForm.current_quantity}
+                              onChange={(e) => setEditForm({...editForm, current_quantity: parseInt(e.target.value)})}
+                              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                            />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                          <button onClick={cancelEditing} style={{ padding: '6px 12px', background: '#ccc', border: 'none', borderRadius: '4px' }}>キャンセル</button>
+                          <button onClick={handleUpdateItem} style={{ padding: '6px 12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>保存</button>
+                        </div>
                       </div>
-                    </div>
-                    <button 
-                      style={{ background: 'none', border: 'none', color: '#FF6B6B', fontSize: '1.2rem', cursor: 'pointer' }}
-                      onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
-                    >
-                      🗑️
-                    </button>
+                    ) : (
+                      // View Mode
+                      <>
+                        <div className="item-info">
+                          <div className="item-name">{item.name}</div>
+                          <div className="item-meta">
+                            下限: {item.min_quantity} | 現在: {item.current_quantity}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); startEditing(item); }}
+                            style={{ padding: '4px 8px', background: '#eee', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                          >
+                            編集
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
+                            style={{ padding: '4px 8px', background: '#FF6B6B', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                          >
+                            削除
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))
               )}
