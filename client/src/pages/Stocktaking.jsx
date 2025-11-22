@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 function Stocktaking() {
   const [inventory, setInventory] = useState([]);
   const [updates, setUpdates] = useState({}); // Map of id -> new_quantity
+  const [expandedGenre, setExpandedGenre] = useState(null);
 
   useEffect(() => {
     fetchInventory();
@@ -23,6 +24,10 @@ function Stocktaking() {
       ...prev,
       [id]: parseInt(value) || 0
     }));
+  };
+
+  const toggleGenre = (id) => {
+    setExpandedGenre(expandedGenre === id ? null : id);
   };
 
   const submitUpdates = async () => {
@@ -58,33 +63,36 @@ function Stocktaking() {
       
       {inventory.map(genre => (
         <div key={genre.id} className="genre-section">
-          <div className="genre-header">
-            {genre.name}
+          <div className="genre-header" onClick={() => toggleGenre(genre.id)}>
+            <span>{genre.name}</span>
+            <span>{expandedGenre === genre.id ? '▼' : '▶'}</span>
           </div>
-          <div className="card" style={{ marginTop: '8px' }}>
-            {genre.items.length === 0 ? (
-              <p>商品はありません。</p>
-            ) : (
-              genre.items.map(item => (
-                <div key={item.id} className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">{item.name}</div>
-                    <div className="item-meta">下限: {item.min_quantity}</div>
+          {expandedGenre === genre.id && (
+            <div className="card" style={{ marginTop: '8px' }}>
+              {genre.items.length === 0 ? (
+                <p>商品はありません。</p>
+              ) : (
+                genre.items.map(item => (
+                  <div key={item.id} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">{item.name}</div>
+                      <div className="item-meta">下限: {item.min_quantity}</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#888' }}>現在:</span>
+                      <input 
+                        type="number" 
+                        placeholder={item.current_quantity}
+                        value={updates[item.id] !== undefined ? updates[item.id] : ''}
+                        onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                        style={{ width: '60px', margin: 0, padding: '8px', textAlign: 'center' }}
+                      />
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#888' }}>現在:</span>
-                    <input 
-                      type="number" 
-                      placeholder={item.current_quantity}
-                      value={updates[item.id] !== undefined ? updates[item.id] : ''}
-                      onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                      style={{ width: '60px', margin: 0, padding: '8px', textAlign: 'center' }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       ))}
       <div style={{ height: '60px' }}></div>
