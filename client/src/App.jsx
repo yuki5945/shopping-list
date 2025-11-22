@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import InventoryList from './pages/InventoryList';
 import AddItem from './pages/AddItem';
 import Stocktaking from './pages/Stocktaking';
 import ShoppingList from './pages/ShoppingList';
 import './index.css';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function NavLink({ to, label, icon }) {
   const location = useLocation();
@@ -20,6 +30,7 @@ function NavLink({ to, label, icon }) {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div id="root">
         <header>
           買い物メモ
